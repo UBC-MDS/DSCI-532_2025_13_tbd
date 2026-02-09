@@ -1,0 +1,4 @@
+name: dashboard
+channels:
+  - conda-forge
+prefix: /Users/devon/miniforge3/envs/dashboard
