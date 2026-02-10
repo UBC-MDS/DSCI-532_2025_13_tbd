@@ -1,3 +1,9 @@
+# Section 1: Motivation and Purpose
+
+# Section 2: Description of the Data
+
+# Section 3: Research Questions & Usage Scenarios
+
 ### Persona and Usage Scenario
 
 Alex and Alexandra, are a young couple from South Africa looking to start a family. They grew up as farmers, but due to the recent political climate, general unrest, and high crime rates, they want to leave for a safer life. They have decided on moving to the United States, following president Trump’s announcements that South African farmers may be eligible to apply for refugee status. However, they recognize that various parts of the U.S. are no safer than South Africa. As they plan for children, they want to settle in the safest neighborhood or area possible. To support this decision, they are looking for a quick and accessible way to visualize crime rates across cities and compare different types of crime across locations.
@@ -14,3 +20,15 @@ Based on their use of the map, Alex and Alexandra have decided that the most cri
 3. As a couple looking to start a family, they want to compare cities on different kinds of crime, and compare different kinds of crime within cities in order to make an informed decision about where to live and raise their family.
 4. Alex and Alexandra want to be able to search for specific locations in the US in order to decide if these cities fit their criteria for a place to live with regards to crime.
 5. Alex and Alexandra want to look at trends of crime over time within cities to understand if crime rates are increasing or decreasing, as that will impact their decision on where to live.
+
+# Section 4: Exploratory Data Analysis 
+
+# Section 5: App Sketch & Description 
+![Sketch](../img/sketch.png)
+The USA Crime Dashboard is a single-page interactive app designed to allow users to explore historical crime patterns across the US. The interface is organized into a filter panel on the left and a main visualization area, allowing users to refine their selections while immediately observing updates across all components of the dashboard.
+
+The filter section is grouped into different key sections. The **Date Range** filter allows users to analyze crime data across a desired time period. The **Geography** filters enable exploration by state, city and population. **Crime Details** filters allow users to look at specific crime categories and toggle between metric types. All filters apply globally and apply to all visualizations and summaries values.
+
+The visualization area contained various views. An interactive map displays patterns where users can hover for a tooltip and click on states/cities to filter the dashboard. A stacked area chart shows how crime levels have changed over time and each category can be clicked to filter the dashboard. A ranking bar chart highlights the top x locations with highest crime rates based on the filters. A comprehensive data table is also provided with sortable values for users who wish to inspect the data further.
+
+Key summary metrics are also displayed at the top to provide high level context for users.
