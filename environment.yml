@@ -1,4 +1,6 @@
 name: dashboard
 channels:
   - conda-forge
-prefix: /Users/devon/miniforge3/envs/dashboard
+dependencies:
+  - python=3.12
+  - shiny=1.5.1
