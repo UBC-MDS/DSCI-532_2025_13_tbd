@@ -22,6 +22,15 @@ Based on their use of the map, Alex and Alexandra have decided that the most cri
 5. Alex and Alexandra want to look at trends of crime over time within cities to understand if crime rates are increasing or decreasing, as that will impact their decision on where to live.
 
 # Section 4: Exploratory Data Analysis 
+![First Visual](../img/First_Visual.png)
+The first visualization compares the average violent crime rate per 100,000 residents across U.S. states using the most recent year of data (2015) from The Marshall Project’s crime dataset. Presenting the states side‑by‑side allows users like Alex and Alexandra to quickly identify which regions tend to have higher or lower levels of violent crime. This supports their need to narrow down potential destinations before exploring specific cities in more detail.
+
+![Second Visual](../img/Second_Visual.png)
+
+The second visualization focuses on New York City and shows how violent crime rates have changed over time. Examining long‑term trends helps users understand whether crime in a particular location is improving, worsening, or remaining stable. This is especially important for families planning a long‑term move, as it provides insight into the future safety of the area rather than relying on a single year of data.
+
+Together, these visualizations demonstrate that the dataset used in our project can support geographic comparisons, filtering by location, and trend analysis, which are key components of the Crime Statistics US dashboard described in our project repository.
+
 
 # Section 5: App Sketch & Description 
 ![Sketch](../img/sketch.png)
