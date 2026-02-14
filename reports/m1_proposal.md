@@ -5,7 +5,30 @@ Target Audience: Individuals looking to move to the United States
 Moving to a different country presents a whole boat load of new challenges. Often times there's language barriers, different cultures and a whole new way of life that can make it difficult for new comers to adapt to. Another key factor that new immigrants may consider when moving to a new country, like the United States for example, is safety. Like in every country there are cities/states that are considered more dangerous and some areas that are relatively safer. Knowing which areas have less crime can play a huge role in deciding where new immigrants would like to move to, espescially if they have young kids. This information is often not readily avalabile and easily accessible for the average indiidual so we as data scientists working at the USA immigration department aim to develop a dashboard containing important information regarding crime rates all throughout the United States. 
 
 # Section 2: Description of the Data
+The dataset we will be working with contains 2830 rows. Each row/example describes a city in the United States that contains around 15 relevant characteristics that shows different metrics for how much crime is being commited in that respective city. The relevance of these variables are adressed below: 
 
+    - City and Administrative info:
+        - ORI – Unique identifier for the reporting police department
+        - department_name – Name of the city or police department
+        - year – Year the data was reported
+        - months_reported – Number of months the department reported data that year
+        - total_pop – Total population of the city
+
+    - Crime Counts (Totals)
+        - homs_sum – Total number of homicides
+        - rape_sum – Total number of rapes
+        - rob_sum – Total number of robberies
+        - agg_ass_sum – Total number of aggravated assaults
+        - violent_crime – Total violent crimes (sum of the above categories)
+    
+    - Crime Rates (Per 100,000 residents)
+        - violent_per_100k
+        - homs_per_100k
+        - rape_per_100k
+        - rob_per_100k
+        - agg_ass_per_100k
+
+Using these variables we can derive numerous different kpi's and stats. For example in our dashboard we might incorporate a crime category ranking (using the Crime Counts labels) or ranking cities based off safety classification labels. 
 
 # Section 3: Research Questions & Usage Scenarios
 
