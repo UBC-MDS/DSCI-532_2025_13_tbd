@@ -1,4 +1,4 @@
-name: dashboard
+name: usa-crime-tracker
 channels:
   - conda-forge
 dependencies:
