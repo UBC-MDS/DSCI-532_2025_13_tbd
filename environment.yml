@@ -1,4 +1,9 @@
-name: dashboard
+name: usa-crime-tracker
 channels:
   - conda-forge
-prefix: /Users/devon/miniforge3/envs/dashboard
+dependencies:
+  - python=3.12
+  - shiny=1.5.1
+  - matplotlib=3.10.8
+  - seaborn=0.13.2
+  - pandas=3.0.0
