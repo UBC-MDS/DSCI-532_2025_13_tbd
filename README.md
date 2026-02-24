@@ -18,7 +18,7 @@ cd DSCI-532_2026_13_usa-crime-tracker
 
 ```bash
 conda env create -f environment.yml
-conda activate tracker
+conda activate usa-crime-tracker
 ```
 
 ## 3. Run the Shiny App 
