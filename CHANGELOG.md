@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Add stuff here
+- Updated background motivation in m1 proposal
 
 ### Changed
 
