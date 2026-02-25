@@ -1,6 +1,6 @@
 # Section 1: Motivation and Purpose
-Our role: Data scientists working in the USA immigration department
-Target Audience: Individuals looking to move to the United States 
+Our role: Data scientists working in the USA immigration department. Our aim with this dashboard is to funnel immigrants to low crime areas to improve post-immigration experience, and create a positive discussion around immigration to the US to encourage greater immigration.
+Target Audience: Individuals looking to move to the United States.
 
 Moving to a different country presents a whole boat load of new challenges. Often times there's language barriers, different cultures and a whole new way of life that can make it difficult for new comers to adapt to. Another key factor that new immigrants may consider when moving to a new country, like the United States for example, is safety. In every country there are cities/states that are considered more dangerous and some areas that are relatively safer. Knowing which areas have less crime can play a huge role in deciding where new immigrants would like to move to, espescially if they have young kids. This information is often not readily avalabile and easily accessible for the average individual so we as data scientists working at the USA immigration department aim to develop a dashboard containing important information regarding crime rates all throughout the United States. 
 
