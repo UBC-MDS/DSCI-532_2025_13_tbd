@@ -10,6 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Update conda activation instuctions to include correct environment name.
+- Updated background motivation in m1 proposal
+- Changed shiny version to 1.4.0
 
 ### Changed
 
