@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Add stuff here
+- Changed shiny version to 1.4.0
 
 ### Changed
 
