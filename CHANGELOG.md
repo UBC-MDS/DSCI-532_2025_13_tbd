@@ -13,6 +13,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Updated background motivation in m1 proposal
 - Changed shiny version to 1.4.0
 - Add requirements.txt for publishing to posit
+- Implemented reactive filtering using `@reactive.calc` for dashboard data.
+- Added City/Department multi-select filter.
+- Added Violent Crime Range slider filter.
+- Added Altair line chart for "Violent crime over time".
+- Connected chart to reactive filtered dataset
 
 ### Changed
 
