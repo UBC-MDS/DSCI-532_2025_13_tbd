@@ -127,7 +127,17 @@ app_ui = ui.page_sidebar(
         ui.p("Population slider"),
         ui.hr(),
         ui.h5("Crime Details"),
-        ui.p("Crime category filter"),
+        ui.input_select(
+            "crime_category",
+            "Crime Category:",
+            {
+                "violent": "All",
+                "homs": "Homocide",
+                "rape": "Rape",
+                "rob": "Robery",
+                "agg_ass": "Aggravated Assault",
+            },
+        ),
         # Aggregated crime filter
         ui.input_slider(
             "violent_range",
