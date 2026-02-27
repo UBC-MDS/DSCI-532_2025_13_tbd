@@ -110,7 +110,7 @@ app_ui = ui.page_sidebar(
         ui.p("Date Range filter"),
         ui.hr(),
         ui.h5("Geography"),
-        ui.p("State dropdown"),
+        ui.input_select("state_id", "State", state_id_map),
         ui.input_selectize(
             "cities",
             "City / Department",
