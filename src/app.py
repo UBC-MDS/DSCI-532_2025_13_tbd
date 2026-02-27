@@ -11,7 +11,7 @@ df_raw["city"] = df_raw["city"].str.partition(",")[0]
 df_raw["state_id"] = df_raw["state_id"].str[:2]
 
 # Load and Clean US Cities Data
-cities = pd.read_csv("data/uscities_raw.csv")
+cities = pd.read_csv("data/raw/uscities_raw.csv")
 cities = cities[cities["state_name"] != "Puerto Rico"]
 cities = cities[["city", "state_id", "lat", "lng"]]
 
@@ -161,10 +161,10 @@ app_ui = ui.page_sidebar(
         ui.card("Change in Crime Rate"),
     ),
     ui.hr(),
-    # Map and Top X Visuals
-    ui.layout_columns(
-        ui.card(ui.h5("Total Crime by State"), ui.p("Map placeholder")),
-        ui.card(ui.h5("Top 10 Crime Rates"), ui.p("Ranking placeholder")),
+    # Map Visuals
+    ui.card(
+        ui.h5("Crime Map"),
+        output_widget("map_plot"),
     ),
     ui.hr(),
     # Aggregated Crime Line Plot
@@ -245,6 +245,136 @@ def server(input, output, session):
                 tooltip=["year:Q", "violent_crime:Q"],
             )
             .properties(width="container", height=340)
+        )
+
+    @render_altair
+    def map_plot():
+
+        # need to filter df on years still!
+        # need to change to collect inputs!
+
+        df = df_merged.copy()
+
+        year_min, year_max = 0, 2000  # input.date_range()
+
+        state_id_to_show = int(input.state_id())
+        selected = list(input.cities())
+        category = str(input.crime_category())
+        config = CRIME_CONFIG.get(category, CRIME_CONFIG["violent"])
+
+        # State Level View
+        state_view = not (state_id_to_show == 0)
+
+        # Multi City Selection
+        multi = selected and ("All" not in selected)
+
+        if state_view:
+            # Isolate the specific state
+            background = (
+                alt.Chart(states)
+                .mark_geoshape(fill="#f0f0f0", stroke="white")
+                .transform_filter(alt.datum.id == state_id_to_show)
+                .transform_lookup(
+                    lookup="id",
+                    from_=alt.LookupData(mapping_df, "id", ["state_name"]),
+                )
+                .encode(tooltip=["state_name:N"])
+            )
+
+            # Get State level Data
+            plot_df = df[df["state_id"] == state_id_map[state_id_to_show][-3:-1]]
+
+            # Get cities in the state
+            state_cities = sorted(plot_df["city"].dropna().unique().tolist())
+
+            # Keep only selected cities that are in the state
+            selected = list(set(selected) & set(state_cities))
+
+            # Aggregate State Level Data
+            plot_df = plot_df.groupby(["city", "state_id"]).agg(["mean"])
+            plot_df.columns = [c[0] for c in plot_df.columns]
+            plot_df = plot_df.reset_index()
+
+        else:
+            # Country View
+            background = (
+                alt.Chart(states)
+                .mark_geoshape(fill="#f0f0f0", stroke="white")
+                .transform_lookup(
+                    lookup="id", from_=alt.LookupData(mapping_df, "id", ["state_name"])
+                )
+                .encode(tooltip=["state_name:N"])
+            )
+
+            # Get country level data
+            plot_df = df.groupby(["city", "state_id"]).agg(["mean"])
+            plot_df.columns = [c[0] for c in plot_df.columns]
+            plot_df = plot_df.reset_index()
+
+        # Color Selected Cities
+        if multi:
+
+            # Create Cities Layer
+            cities = (
+                alt.Chart(plot_df)
+                .mark_circle()
+                .encode(
+                    longitude="lng:Q",
+                    latitude="lat:Q",
+                    size=alt.Size(
+                        f"{category}_per_100k:Q",
+                        title=f"{config['title']} per 100K ({year_min}-{year_max})",
+                    ),
+                    color=alt.condition(
+                        alt.FieldOneOfPredicate(field="city", oneOf=selected),
+                        alt.value(config["color"]),
+                        alt.value("#DCDCDC"),
+                    ),
+                    tooltip=[
+                        "city:N",
+                        "state_id:N",
+                        f"{config['column']}:Q",
+                        f"{category}_per_100k:Q",
+                    ],
+                )
+            )
+
+            return (
+                # Layer Cities on Background
+                alt.layer(background, cities)
+                .configure_view(stroke=None)
+                .project("albersUsa")
+                .properties(width="container", height=500)
+            )
+
+        # Color All Cities
+
+        # Create Cities Layer
+        cities = (
+            alt.Chart(plot_df)
+            .mark_circle()
+            .encode(
+                longitude="lng:Q",
+                latitude="lat:Q",
+                size=alt.Size(
+                    f"{category}_per_100k:Q",
+                    title=f"{config['title']} per 100K ({year_min}-{year_max})",
+                ),
+                color=alt.value(config["color"]),
+                tooltip=[
+                    "city:N",
+                    "state_id:N",
+                    f"{config['column']}:Q",
+                    f"{category}_per_100k:Q",
+                ],
+            )
+        )
+        return (
+            # Layer Cities on Background
+            alt.layer(background, cities)
+            .configure_view(stroke=None)
+            .project("albersUsa")
+            .properties(width="container", height=500)
         )
 
 
