@@ -181,13 +181,7 @@ app_ui = ui.page_sidebar(
     ui.card(
         ui.h5("Violent crime over time"),
         output_widget("line_plot"),
-    ),
-    ui.hr(),
-    # Full Data Table
-    ui.card(ui.h5("Filtered Data (debug)"),
-    ui.output_data_frame("filtered_table"),
-    full_screen=True,
-),
+    )
 )
 
 
@@ -393,19 +387,4 @@ def server(input, output, session):
             .project("albersUsa")
             .properties(width="container", height=500)
         )
-
-    @render.data_frame
-    def filtered_table():
-        df = filtered_df().copy()
-
-        # Show only the columns that help you debug filters
-        cols = [
-        "year", "state_id", "city", "total_pop",
-        "violent_crime", "violent_per_100k",
-        "homs_sum", "rape_sum", "rob_sum", "agg_ass_sum",
-        ]
-        cols = [c for c in cols if c in df.columns]  # keep only existing cols
-
-        # Return a small sample so it loads fast
-        return df[cols]
 app = App(app_ui, server)
