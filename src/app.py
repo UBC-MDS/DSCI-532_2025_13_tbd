@@ -188,18 +188,48 @@ app_ui = ui.page_sidebar(
 def server(input, output, session):
     @reactive.calc
     def filtered_df():
-        df = df_raw.copy()
+        df = df_merged.copy()
 
-        vmin, vmax = input.violent_range()
-        df = df[(df["violent_crime"] >= vmin) & (df["violent_crime"] <= vmax)]
+        #Year filter
+        try:
+            yr_min, yr_max = input.year_range()
+            # coerce year before comparing
+            df["year"] = pd.to_numeric(df["year"], errors="coerce")
+            df = df.dropna(subset=["year"])
+            df = df[(df["year"] >= yr_min) & (df["year"] <= yr_max)]
+        except Exception:
+            pass
 
+        #State filter
+        state_id_to_show = int(input.state_id())
+        if state_id_to_show != 0:
+            # state_id_map values look like "Alabama (AL)" -> grab "AL"
+            st_abbr = state_id_map[state_id_to_show][-3:-1]
+            df = df[df["state_id"] == st_abbr]
+
+        #City filter
         selected = list(input.cities())
         if selected and "All" not in selected:
             df = df[df["city"].isin(selected)]
 
-        pop_low, pop_high = input.population_range()
-        df = df[(df["total_pop"] >= pop_low) & (df["total_pop"] <= pop_high)]
+        #Violent range filter
+        df["violent_crime"] = pd.to_numeric(df["violent_crime"], errors="coerce")
+        df = df.dropna(subset=["violent_crime"])
+        vmin, vmax = input.violent_range()
+        df = df[(df["violent_crime"] >= vmin) & (df["violent_crime"] <= vmax)]
 
+        #Crime category filter
+        category = str(input.crime_category())
+        config = CRIME_CONFIG.get(category, CRIME_CONFIG["violent"])
+        col = config["column"]
+        if col in df.columns:
+            df[col] = pd.to_numeric(df[col], errors="coerce")
+            df = df.dropna(subset=[col])
+
+        #Population filter
+        if hasattr(input, "pop_range") and ("population" in df.columns):
+            pmin, pmax = input.pop_range()
+            df = df[(df["population"] >= pmin) & (df["population"] <= pmax)]
 
         return df
     
@@ -245,9 +275,15 @@ def server(input, output, session):
     def line_plot():
         df = filtered_df().copy()
 
+        category = str(input.crime_category())
+        config = CRIME_CONFIG.get(category, CRIME_CONFIG["violent"])
+        crime_col = config["column"]
+        crime_title = config["title"]
+
         df["year"] = pd.to_numeric(df["year"], errors="coerce")
-        df["violent_crime"] = pd.to_numeric(df["violent_crime"], errors="coerce")
-        df = df.dropna(subset=["year", "violent_crime"])
+        df[crime_col] = pd.to_numeric(df[crime_col], errors="coerce")
+
+        df = df.dropna(subset=["year", crime_col])
 
         if df.empty:
             return (
@@ -259,30 +295,35 @@ def server(input, output, session):
         selected = list(input.cities())
         multi = selected and ("All" not in selected)
 
+        # If multiple cities are selected, show lines for each city. Otherwise, show aggregated line for all cities.
         if multi:
-            plot_df = df.groupby(["year", "city"], as_index=False)[
-                "violent_crime"
-            ].sum()
+            plot_df = (
+                df.groupby(["year", "city"], as_index=False)[crime_col]
+                .sum()
+            )
+
             return (
                 alt.Chart(plot_df)
                 .mark_line()
                 .encode(
                     x=alt.X("year:Q", title="Year"),
-                    y=alt.Y("violent_crime:Q", title="Violent crime (count)"),
+                    y=alt.Y(f"{crime_col}:Q", title=f"{crime_title} (count)"),
                     color=alt.Color("city:N", title="City/Dept"),
-                    tooltip=["year:Q", "city:N", "violent_crime:Q"],
+                    tooltip=["year:Q", "city:N", f"{crime_col}:Q"],
                 )
                 .properties(width="container", height=340)
             )
 
-        plot_df = df.groupby("year", as_index=False)["violent_crime"].sum()
+        #All Cities (aggregated)
+        plot_df = df.groupby("year", as_index=False)[crime_col].sum()
+
         return (
             alt.Chart(plot_df)
             .mark_line()
             .encode(
                 x=alt.X("year:Q", title="Year"),
-                y=alt.Y("violent_crime:Q", title="Violent crime"),
-                tooltip=["year:Q", "violent_crime:Q"],
+                y=alt.Y(f"{crime_col}:Q", title=f"{crime_title} (count)"),
+                tooltip=["year:Q", f"{crime_col}:Q"],
             )
             .properties(width="container", height=340)
         )
