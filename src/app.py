@@ -100,6 +100,10 @@ CRIME_CONFIG = {
     },
 }
 
+# intitial work for the input population slider
+min_pop=int(df_merged["total_pop"].min())
+max_pop=int(df_merged["total_pop"].max())
+
 
 app_ui = ui.page_sidebar(
     # Filter Section
@@ -124,7 +128,13 @@ app_ui = ui.page_sidebar(
                 "closeAfterSelect": True,
             },
         ),
-        ui.p("Population slider"),
+        ui.input_slider(
+            "population_range",
+            "Population range", 
+            min= min_pop, 
+            max= max_pop, 
+            value=(min_pop, max_pop)
+        ),
         ui.hr(),
         ui.h5("Crime Details"),
         ui.input_select(
@@ -174,7 +184,10 @@ app_ui = ui.page_sidebar(
     ),
     ui.hr(),
     # Full Data Table
-    ui.card(ui.h5("Data Table"), ui.p("Interactive data table placeholder")),
+    ui.card(ui.h5("Filtered Data (debug)"),
+    ui.output_data_frame("filtered_table"),
+    full_screen=True,
+),
 )
 
 
@@ -189,6 +202,10 @@ def server(input, output, session):
         selected = list(input.cities())
         if selected and "All" not in selected:
             df = df[df["city"].isin(selected)]
+
+        pop_low, pop_high = input.population_range()
+        df = df[(df["total_pop"] >= pop_low) & (df["total_pop"] <= pop_high)]
+
 
         return df
 
@@ -377,5 +394,18 @@ def server(input, output, session):
             .properties(width="container", height=500)
         )
 
+    @render.data_frame
+    def filtered_table():
+        df = filtered_df().copy()
 
+        # Show only the columns that help you debug filters
+        cols = [
+        "year", "state_id", "city", "total_pop",
+        "violent_crime", "violent_per_100k",
+        "homs_sum", "rape_sum", "rob_sum", "agg_ass_sum",
+        ]
+        cols = [c for c in cols if c in df.columns]  # keep only existing cols
+
+        # Return a small sample so it loads fast
+        return df[cols]
 app = App(app_ui, server)
