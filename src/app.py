@@ -100,14 +100,25 @@ CRIME_CONFIG = {
     },
 }
 
+# intitial work for the input population slider
+min_pop=int(df_merged["total_pop"].min())
+max_pop=int(df_merged["total_pop"].max())
+
 
 app_ui = ui.page_sidebar(
     # Filter Section
     ui.sidebar(
         ui.h4("Filters"),
         ui.hr(),
-        ui.h5("Date Range"),
+        ui.h5("Date Range and Population"),
         ui.p("Date Range filter"),
+        ui.input_slider(
+            "population_range",
+            "Population range", 
+            min= min_pop, 
+            max= max_pop, 
+            value=(min_pop, max_pop)
+        ),
         ui.hr(),
         ui.h5("Geography"),
         ui.input_select("state_id", "State", state_id_map),
@@ -124,7 +135,6 @@ app_ui = ui.page_sidebar(
                 "closeAfterSelect": True,
             },
         ),
-        ui.p("Population slider"),
         ui.hr(),
         ui.h5("Crime Details"),
         ui.input_select(
@@ -154,11 +164,11 @@ app_ui = ui.page_sidebar(
     ui.h1("USA Crime Dashboard"),
     # KPI and Summary
     ui.layout_columns(
-        ui.card("Total Crimes"),
-        ui.card("Crime Rate (per 100k)"),
-        ui.card("Population (millions)"),
-        ui.card("Most Common Crime"),
-        ui.card("Change in Crime Rate"),
+        ui.value_box("Total Crimes", ui.output_text("total_crimes")),
+        ui.value_box("Crime Rate (per 100k)", ui.output_text("crime_rate")),
+        ui.value_box("Population", ui.output_text("pop_kpi")),
+        ui.value_box("Most Common Crime", 0),
+        ui.value_box("Change in Crime Rate", 0)
     ),
     ui.hr(),
     # Map Visuals
@@ -171,10 +181,7 @@ app_ui = ui.page_sidebar(
     ui.card(
         ui.h5("Violent crime over time"),
         output_widget("line_plot"),
-    ),
-    ui.hr(),
-    # Full Data Table
-    ui.card(ui.h5("Data Table"), ui.p("Interactive data table placeholder")),
+    )
 )
 
 
@@ -190,7 +197,40 @@ def server(input, output, session):
         if selected and "All" not in selected:
             df = df[df["city"].isin(selected)]
 
+        pop_low, pop_high = input.population_range()
+        df = df[(df["total_pop"] >= pop_low) & (df["total_pop"] <= pop_high)]
+
+
         return df
+    
+    @render.text
+    def total_crimes(): 
+        df = filtered_df().copy()
+        latest_year = df["year"].max()
+        df_latest = df[df["year"] == latest_year]
+        tot = int(df_latest["violent_crime"].sum())
+        return tot
+    
+    @render.text
+    def crime_rate(): 
+        df= filtered_df().copy()
+        latest_year = df["year"].max()
+        df_latest = df[df["year"] == latest_year]
+
+        total_crime = df_latest["violent_crime"].sum()
+        total_pop = df_latest.drop_duplicates(["city", "state_id"])["total_pop"].sum()
+        rate = int((total_crime / total_pop) * 100000)
+
+        return rate
+    
+    @render.text
+    def pop_kpi(): 
+        df=filtered_df().copy()
+        latest_year = df["year"].max()
+        df_latest = df[df["year"] == latest_year]
+        duplicates_cities=df_latest.drop_duplicates(subset=["city", "state_id"])
+        pop=int(duplicates_cities["total_pop"].sum())
+        return pop
 
     @render.text
     def debug_line_plot():
@@ -376,6 +416,4 @@ def server(input, output, session):
             .project("albersUsa")
             .properties(width="container", height=500)
         )
-
-
 app = App(app_ui, server)
