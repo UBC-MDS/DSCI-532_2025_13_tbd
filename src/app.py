@@ -184,11 +184,6 @@ app_ui = ui.page_sidebar(
             ui.output_text("kpi_most_common")
         ),
 
-        # ADDED: KPI — CHANGE IN CRIME RATE TABLE
-        ui.card(
-            ui.h5("Change in Crime Rate"),
-            ui.output_data_frame("kpi_change_table")
-        ),
     ),
     ui.hr(),
     # Map Visuals
@@ -197,12 +192,40 @@ app_ui = ui.page_sidebar(
         output_widget("map_plot"),
     ),
     ui.hr(),
-    # Aggregated Crime Line Plot
-    ui.card(
-        ui.h5("Violent crime over time"),
-        output_widget("line_plot"),
+    # # Aggregated Crime Line Plot
+    # ui.card(
+    #     ui.h5("Violent crime over time"),
+    #     output_widget("line_plot"),
+    # ),
+    # ui.hr(),
+    # # ADDED: KPI — CHANGE IN CRIME RATE TABLE
+    # ui.card(
+    #     ui.h5("Change in Crime Rate"),
+    #     ui.output_data_frame("kpi_change_table")
+    # ),
+    # ui.hr(),
+    
+    # Modified: Aggregated Crime Line Plot + KPI table in same row
+    ui.layout_columns(
+        ui.column(
+            12,
+            ui.card(
+                ui.h5("Violent crime over time"),
+                output_widget("line_plot"),
+            )
+        ),
+    
+        ui.column(
+            12,
+            ui.card(
+                ui.h5("Change in Crime Rate"),
+                ui.output_data_frame("kpi_change_table")
+            )
+        )
     ),
+    
     ui.hr(),
+
     # Full Data Table
     ui.card(ui.h5("Data Table"), ui.p("Interactive data table placeholder")),
     # ADDED: APPLY THEME
