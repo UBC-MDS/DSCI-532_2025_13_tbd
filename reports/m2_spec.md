@@ -9,14 +9,12 @@
 | Population                       | Input         | ui.input_slider()                              | —                                           |                          |
 | Category                         | Input         | ui.input_slider()                              | —                                           |                          |
 | Aggregate Crime Column           | Input         | ui.input_slider()                              | —                                           |                          |
-|                                  |               |                                                |                                             |                          |
 | filtered_df                      | Reactive calc | @reactive.calc                                 | input_year, input_region                    | #1, #2, #3               |
 | filtered_data                    | Reactive calc | @reactive.calc                                 | input_year                                  |                          |
 | most_common_crime                | Reactive calc | @reactive.calc                                 | filtered_data                               |                          |
 | crime_range_table                | Reactive calc | @reactive.calc                                 | filtered_data                               |                          |
 | KPI (Total Crime)                | Output        | @reactive.text; ui.value_box("name"           | ui.output_text(""name_from_server_func"")) | input_year, input_region |
 | KPI (Crime Rate)                 | Output        | @reactive.text; ui.value_box("name"           | ui.output_text(""name_from_server_func"")) | filtered_df              |
-
 | KPI (population)                 | Output        | @reactive.text; ui.value_box("name"           | ui.output_text(""name_from_server_func"")) | filtered_df              |
 | KPI (Most Common Crime)          | Output        | @reactive.text; ui.value_box("name"           | ui.output_text(""name_from_server_func"")) |                          |
 | KPI (Change in Crime Rate) Table | Output        | @render.data_frame                             |                                             |                          |
