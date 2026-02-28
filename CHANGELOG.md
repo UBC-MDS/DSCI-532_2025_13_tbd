@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added State single-select filter.
 - Added map_plot.
 - Added 2 new user stories to filter on population and crime rate.
+- Added m2_spec.md to reports
 
 ### Changed
 
