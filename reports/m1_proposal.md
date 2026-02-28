@@ -48,6 +48,8 @@ Based on their use of the map, Alex and Alexandra have decided that the most cri
 3. As a couple looking to start a family, they want to compare cities on different kinds of crime, and compare different kinds of crime within cities in order to make an informed decision about where to live and raise their family.
 4. Alex and Alexandra want to be able to search for specific locations in the US in order to decide if these cities fit their criteria for a place to live with regards to crime.
 5. Alex and Alexandra want to look at trends of crime over time within cities to understand if crime rates are increasing or decreasing, as that will impact their decision on where to live.
+6. Alex and Alexandra want to be able to filter for cities with populations in specfici ranges. They want to relate how large of a city they want to live in, with crime rates.
+7. Alex and Alexandra would like to be able to use crime rate as a filter so select certain cities or look at trends within over time.
 
 # Section 4: Exploratory Data Analysis 
 ![First Visual](../img/First_Visual.png)
