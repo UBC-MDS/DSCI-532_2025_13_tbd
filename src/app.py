@@ -298,7 +298,7 @@ def server(input, output, session):
         # need to filter df on years still!
         # need to change to collect inputs!
 
-        df = filtered_df().copy()
+        df = df_merged.copy()
 
         year_min, year_max = 0, 2000  # input.date_range()
 
