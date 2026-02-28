@@ -1,25 +1,35 @@
 # Updated Job Stories
 
+| #   | Job Story                                                                                                                                          | Status         | Notes                  |
+| --- | -------------------------------------------------------------------------------------------------------------------------------------------------- | -------------- |----------------------- |
+| 1   | When I open the dashboard I want to see crime rates per city on a map so I can incorporate geographical context in deciding where to live.         | ✅ Implemented | Currently set up to show avg crime rate over selected time period. |
+| 2   | When I look at the dashboard I want to select cities so I can see locations, information, and isolate crime trends for those cities.               | ✅ Implemented | ...                    |
+| 3   | When I look at the dashboard I want to select a certain state so I see locations, information, and isolate crime trends for cities in those states.| ✅ Implemented | ...                    |
+| 4   | When I select cities I want to see compare crime rate types so I can fully understand the type of crime that happens in each city.                 | ✅ Implemented | ...                    |
+| 5   | When I select cities I want to see crime trends over time within a time range so I can understand if crime is increasing or decreasing.            | ✅ Implemented | ...                    |
+| 6   | When I look at the dashboard I want to filter for cities within a population range so I can isolate cities under or over a population size.        | ✅ Implemented | added for M2           |
+| 7   | When I look at the dashboard I want to filter for cities within a crime rate range so I can isolate cities under specific crime levels.            | ✅ Implemented | added for M2           |
+
 # Component Iventory
 | ID                               | Type          | Shiny widget / renderer                        | Depends on                                  | Job story                |
 |----------------------------------|---------------|------------------------------------------------|---------------------------------------------|--------------------------|
-| Date/Year                        | Input         | ui.input_slider()                              | —                                           |                          |
-| State                            | Input         | ui.input_select()                              | —                                           |                          |
-| City                             | Input         | ui.input_selectize()                              | —                                           |                          |
-| Population                       | Input         | ui.input_slider()                              | —                                           |                          |
-| Category                         | Input         | ui.input_select()                              | —                                           |                          |
-| Aggregate Crime Column           | Input         | ui.input_slider()                              | —                                           |                          |
-| filtered_df                      | Reactive calc | @reactive.calc                                 | input_year, input_region                    | #1, #2, #3               |
-| filtered_data                    | Reactive calc | @reactive.calc                                 | input_year                                  |                          |
-| most_common_crime                | Reactive calc | @reactive.calc                                 | filtered_data                               |                          |
-| crime_range_table                | Reactive calc | @reactive.calc                                 | filtered_data                               |                          |
-| KPI (Total Crime)                | Output        | @reactive.text; ui.value_box("name"           | ui.output_text(""name_from_server_func"")) | input_year, input_region |
-| KPI (Crime Rate)                 | Output        | @reactive.text; ui.value_box("name"           | ui.output_text(""name_from_server_func"")) | filtered_df              |
-| KPI (population)                 | Output        | @reactive.text; ui.value_box("name"           | ui.output_text(""name_from_server_func"")) | filtered_df              |
-| KPI (Most Common Crime)          | Output        | @reactive.text; ui.value_box("name"           | ui.output_text(""name_from_server_func"")) |                          |
-| KPI (Change in Crime Rate) Table | Output        | @render.data_frame                             |                                             |                          |
-| Map Graph                        | Output        | @render.widget; ui.ouput_widget("plot_name")   |                                             |                          |
-| Line graph (Comparision)         | Output        | @render.widget; ui.ouput_widget("plot_name")   | filtered_df                                 |                          |
+| Date/Year                        | Input         | ui.input_slider()                              | —                                           | #5                       |
+| State                            | Input         | ui.input_select()                              | —                                           | #3                       |
+| City                             | Input         | ui.input_selectize()                           | —                                           | #2                       |
+| Population                       | Input         | ui.input_slider()                              | —                                           | #6                       |
+| Category                         | Input         | ui.input_select()                              | —                                           | #4                       |
+| Aggregate Crime Column           | Input         | ui.input_slider()                              | —                                           | #7                       |
+| filtered_df                      | Reactive calc | @reactive.calc                                 | input_year, input_region                    | #1, #2, #3, #5, #6, #7   |
+| filtered_data                    | Reactive calc | @reactive.calc                                 | input_year                                  | #1, #2, #3, #5, #6, #7   |
+| most_common_crime                | Reactive calc | @reactive.calc                                 | filtered_data                               | #2, #3, #4               |
+| crime_range_table                | Reactive calc | @reactive.calc                                 | filtered_data                               | #2, #3, #4, #5, #6, #7   |
+| KPI (Total Crime)                | Output        | @reactive.text; ui.value_box("name"           | ui.output_text(""name_from_server_func""))m, input_year, input_region | #2, #3, #4, #5, #6, #7  |
+| KPI (Crime Rate)                 | Output        | @reactive.text; ui.value_box("name"           | ui.output_text(""name_from_server_func"")), filtered_df | #2, #3, #5    |
+| KPI (population)                 | Output        | @reactive.text; ui.value_box("name"           | ui.output_text(""name_from_server_func"")), filtered_df | #2, #3, #6    |
+| KPI (Most Common Crime)          | Output        | @reactive.text; ui.value_box("name"           | ui.output_text(""name_from_server_func""))   | #2, #3, #4               |
+| KPI (Change in Crime Rate) Table | Output        | @render.data_frame                             |                                             | #2, #3, #5               |
+| Map Graph                        | Output        | @render.widget; ui.ouput_widget("plot_name")   |                                             | #1, #2, #3, #4, #6, #7   |
+| Line graph (Comparision)         | Output        | @render.widget; ui.ouput_widget("plot_name")   | filtered_df                                 | #2, #3, #4, #5, #6, #7   |                         |                          |
 
 # Reactivity Diagram
 

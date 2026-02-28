@@ -20,12 +20,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added map_plot.
 - Added 2 new user stories to filter on population and crime rate.
 - Added links to published stable and preview dashboards to README.md
+- Added m2_spec.md to reports
 
 ### Changed
 
 - Updated background motivation in m1 proposal
 - Update conda activation instuctions to include correct environment name.
 - Changed shiny version to 1.4.0
+- Updated environment.yml
 
 ### Removed
 
