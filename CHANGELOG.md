@@ -14,10 +14,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added City/Department multi-select filter.
 - Added Violent Crime Range slider filter.
 - Added Altair line chart for "Violent crime over time".
-- Connected chart to reactive filtered dataset
-- Added Crime Category single-select filter
-- Added State single-select filter
-- Added map_plot
+- Connected chart to reactive filtered dataset.
+- Added Crime Category single-select filter.
+- Added State single-select filter.
+- Added map_plot.
+- Added 2 new user stories to filter on population and crime rate.
 
 ### Changed
 
