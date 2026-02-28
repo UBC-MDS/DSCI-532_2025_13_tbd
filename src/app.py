@@ -100,15 +100,35 @@ CRIME_CONFIG = {
     },
 }
 
+THEME = "flatly"
 
 app_ui = ui.page_sidebar(
     # Filter Section
     ui.sidebar(
         ui.h4("Filters"),
         ui.hr(),
+        # ADDED: DATE SLIDER
         ui.h5("Date Range"),
-        ui.p("Date Range filter"),
+        #ui.p("Date Range filter"),
+        ui.input_slider(
+            "year_range",
+            "Select Year",
+            min=int(df_merged["year"].min()),
+            max=int(df_merged["year"].max()),
+            value=[int(df_merged["year"].min()), int(df_merged["year"].max())],
+            step=1
+        ),
         ui.hr(),
+        
+        # ADDED: THEME SELECTOR
+        ui.h5("Theme"),
+        ui.input_select(
+            "theme_choice",
+            "Choose Theme",
+            ["flatly", "darkly", "cosmo", "minty"]
+        ),
+        ui.hr(),
+        
         ui.h5("Geography"),
         ui.input_select("state_id", "State", state_id_map),
         ui.input_selectize(
@@ -157,8 +177,18 @@ app_ui = ui.page_sidebar(
         ui.card("Total Crimes"),
         ui.card("Crime Rate (per 100k)"),
         ui.card("Population (millions)"),
-        ui.card("Most Common Crime"),
-        ui.card("Change in Crime Rate"),
+        
+        # ADDED: KPI — MOST COMMON CRIME
+        ui.card(
+            ui.h5("Most Common Crime"),
+            ui.output_text("kpi_most_common")
+        ),
+
+        # ADDED: KPI — CHANGE IN CRIME RATE TABLE
+        ui.card(
+            ui.h5("Change in Crime Rate"),
+            ui.output_data_frame("kpi_change_table")
+        ),
     ),
     ui.hr(),
     # Map Visuals
@@ -175,6 +205,8 @@ app_ui = ui.page_sidebar(
     ui.hr(),
     # Full Data Table
     ui.card(ui.h5("Data Table"), ui.p("Interactive data table placeholder")),
+    # ADDED: APPLY THEME
+    # theme=ui.Theme(THEME)
 )
 
 
@@ -377,5 +409,58 @@ def server(input, output, session):
             .properties(width="container", height=500)
         )
 
+    # ADDED: FILTER DATA BY YEAR
+    @reactive.Calc
+    def filtered_data():
+        yr = input.year_range()
+        return df_merged[(df_merged["year"] >= yr[0]) & (df_merged["year"] <= yr[1])]
+
+    # ADDED: KPI — MOST COMMON CRIME (USING *_sum COLUMNS)
+    @reactive.Calc
+    def most_common_crime():
+        d = filtered_data()
+        if d.empty:
+            return "No data"
+
+        crime_totals = {
+            "Homicide": d["homs_sum"].sum(),
+            "Rape": d["rape_sum"].sum(),
+            "Robbery": d["rob_sum"].sum(),
+            "Aggravated Assault": d["agg_ass_sum"].sum()
+        }
+
+        return max(crime_totals, key=crime_totals.get)
+
+    @output
+    @render.text
+    def kpi_most_common():
+        return most_common_crime()
+
+    # ADDED: KPI — CHANGE IN CRIME RATE (violent_per_100k)
+    @reactive.Calc
+    def crime_change_table():
+        d = filtered_data()
+        if d.empty:
+            return pd.DataFrame({"message": ["No data available"]})
+
+        # Compute average violent crime rate per year
+        yearly = (
+            d.groupby("year")["violent_per_100k"]
+            .mean()
+            .reset_index()
+            .sort_values("year")
+        )
+
+        # ROUND ALL NUMERIC COLUMNS TO 2 DECIMAL PLACES 
+        yearly["previous"] = round(yearly["violent_per_100k"].shift(1),2)
+        yearly["change"] = round(yearly["violent_per_100k"] - yearly["previous"],2)
+        yearly["violent_per_100k"] = round(yearly["violent_per_100k"],2)
+        
+        return yearly
+
+    @output
+    @render.data_frame
+    def kpi_change_table():
+        return crime_change_table()
 
 app = App(app_ui, server)
