@@ -32,6 +32,29 @@
 
 # Reactivity Diagram
 
+```mermaid
+flowchart TD
+  A[/input_city_dept/] --> F{{filtered_df}}
+  B[/input_population/] --> F
+  S[/input_state/] --> F
+  C[/input_year/] --> F
+  Crime[/input_crime_cat/] --> F
+  V[/input_violent_crime/] --> F
+  F --> P1([plot_viol_crime_over_time])
+ S --> P2([map_plot])
+ A --> P2
+ Crime --> P2
+ B --> P2
+ C --> P2
+
+  F --> V1([out_total_crime])
+  F --> V2([out_crime_rate])
+  F --> V3([out_population])
+  F --> V4([out_most_common_crime])
+  F --> V5([out_change_rate])
+  ```
+
+
 # Calculation Details
 For the `filtered_df` reactive calculation, we will filter the original dataset based on the user’s selections for year, state, city, total crime range, crime category and population filters. This will allow us to create a subset of the data that is relevant to the user’s specific interests and needs. This filtered dataset is used to output the Crime over time line graph and all KPI summaries.
 
