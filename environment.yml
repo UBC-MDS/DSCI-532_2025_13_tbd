@@ -2,8 +2,13 @@ name: usa-crime-tracker
 channels:
   - conda-forge
 dependencies:
-  - python=3.12
-  - shiny=1.5.1
-  - matplotlib=3.10.8
   - seaborn=0.13.2
+  - shiny=1.4.0
+  - matplotlib=3.10.8
   - pandas=3.0.0
+  - python=3.12
+  - altair
+  - shinywidgets
+  - vega_datasets
+  - anywidget
+prefix: /Users/devon/miniforge3/envs/usa-crime-tracker
