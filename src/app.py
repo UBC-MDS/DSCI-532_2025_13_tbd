@@ -101,8 +101,8 @@ CRIME_CONFIG = {
 }
 
 # intitial work for the input population slider
-min_pop=int(df_merged["total_pop"].min())
-max_pop=int(df_merged["total_pop"].max())
+min_pop = int(df_merged["total_pop"].min())
+max_pop = int(df_merged["total_pop"].max())
 
 
 app_ui = ui.page_sidebar(
@@ -114,10 +114,10 @@ app_ui = ui.page_sidebar(
         ui.p("Date Range filter"),
         ui.input_slider(
             "population_range",
-            "Population range", 
-            min= min_pop, 
-            max= max_pop, 
-            value=(min_pop, max_pop)
+            "Population range",
+            min=min_pop,
+            max=max_pop,
+            value=(min_pop, max_pop),
         ),
         ui.hr(),
         ui.h5("Geography"),
@@ -168,7 +168,7 @@ app_ui = ui.page_sidebar(
         ui.value_box("Crime Rate (per 100k)", ui.output_text("crime_rate")),
         ui.value_box("Population", ui.output_text("pop_kpi")),
         ui.value_box("Most Common Crime", 0),
-        ui.value_box("Change in Crime Rate", 0)
+        ui.value_box("Change in Crime Rate", 0),
     ),
     ui.hr(),
     # Map Visuals
@@ -181,7 +181,7 @@ app_ui = ui.page_sidebar(
     ui.card(
         ui.h5("Violent crime over time"),
         output_widget("line_plot"),
-    )
+    ),
 )
 
 
@@ -190,7 +190,7 @@ def server(input, output, session):
     def filtered_df():
         df = df_merged.copy()
 
-        #Year filter
+        # Year filter
         try:
             yr_min, yr_max = input.year_range()
             # coerce year before comparing
@@ -200,25 +200,25 @@ def server(input, output, session):
         except Exception:
             pass
 
-        #State filter
+        # State filter
         state_id_to_show = int(input.state_id())
         if state_id_to_show != 0:
             # state_id_map values look like "Alabama (AL)" -> grab "AL"
             st_abbr = state_id_map[state_id_to_show][-3:-1]
             df = df[df["state_id"] == st_abbr]
 
-        #City filter
+        # City filter
         selected = list(input.cities())
         if selected and "All" not in selected:
             df = df[df["city"].isin(selected)]
 
-        #Violent range filter
+        # Violent range filter
         df["violent_crime"] = pd.to_numeric(df["violent_crime"], errors="coerce")
         df = df.dropna(subset=["violent_crime"])
         vmin, vmax = input.violent_range()
         df = df[(df["violent_crime"] >= vmin) & (df["violent_crime"] <= vmax)]
 
-        #Crime category filter
+        # Crime category filter
         category = str(input.crime_category())
         config = CRIME_CONFIG.get(category, CRIME_CONFIG["violent"])
         col = config["column"]
@@ -226,24 +226,24 @@ def server(input, output, session):
             df[col] = pd.to_numeric(df[col], errors="coerce")
             df = df.dropna(subset=[col])
 
-        #Population filter
-        if hasattr(input, "pop_range") and ("population" in df.columns):
-            pmin, pmax = input.pop_range()
-            df = df[(df["population"] >= pmin) & (df["population"] <= pmax)]
+        # Population filter
+        if hasattr(input, "population_range") and ("total_pop" in df.columns):
+            pmin, pmax = input.population_range()
+            df = df[(df["total_pop"] >= pmin) & (df["total_pop"] <= pmax)]
 
         return df
-    
+
     @render.text
-    def total_crimes(): 
+    def total_crimes():
         df = filtered_df().copy()
         latest_year = df["year"].max()
         df_latest = df[df["year"] == latest_year]
         tot = int(df_latest["violent_crime"].sum())
         return tot
-    
+
     @render.text
-    def crime_rate(): 
-        df= filtered_df().copy()
+    def crime_rate():
+        df = filtered_df().copy()
         latest_year = df["year"].max()
         df_latest = df[df["year"] == latest_year]
 
@@ -252,14 +252,14 @@ def server(input, output, session):
         rate = int((total_crime / total_pop) * 100000)
 
         return rate
-    
+
     @render.text
-    def pop_kpi(): 
-        df=filtered_df().copy()
+    def pop_kpi():
+        df = filtered_df().copy()
         latest_year = df["year"].max()
         df_latest = df[df["year"] == latest_year]
-        duplicates_cities=df_latest.drop_duplicates(subset=["city", "state_id"])
-        pop=int(duplicates_cities["total_pop"].sum())
+        duplicates_cities = df_latest.drop_duplicates(subset=["city", "state_id"])
+        pop = int(duplicates_cities["total_pop"].sum())
         return pop
 
     @render.text
@@ -297,10 +297,7 @@ def server(input, output, session):
 
         # If multiple cities are selected, show lines for each city. Otherwise, show aggregated line for all cities.
         if multi:
-            plot_df = (
-                df.groupby(["year", "city"], as_index=False)[crime_col]
-                .sum()
-            )
+            plot_df = df.groupby(["year", "city"], as_index=False)[crime_col].sum()
 
             return (
                 alt.Chart(plot_df)
@@ -314,7 +311,7 @@ def server(input, output, session):
                 .properties(width="container", height=340)
             )
 
-        #All Cities (aggregated)
+        # All Cities (aggregated)
         plot_df = df.groupby("year", as_index=False)[crime_col].sum()
 
         return (
@@ -336,12 +333,46 @@ def server(input, output, session):
 
         df = df_merged.copy()
 
-        year_min, year_max = 0, 2000  # input.date_range()
-
         state_id_to_show = int(input.state_id())
         selected = list(input.cities())
         category = str(input.crime_category())
         config = CRIME_CONFIG.get(category, CRIME_CONFIG["violent"])
+
+        # Year filter
+        try:
+            yr_min, yr_max = input.year_range()
+            # coerce year before comparing
+            df["year"] = pd.to_numeric(df["year"], errors="coerce")
+            df = df.dropna(subset=["year"])
+            df = df[(df["year"] >= yr_min) & (df["year"] <= yr_max)]
+        except Exception:
+            yr_min, yr_max = df["year"].min(), df["year"].max()
+
+        # State filter
+        state_id_to_show = int(input.state_id())
+        if state_id_to_show != 0:
+            # state_id_map values look like "Alabama (AL)" -> grab "AL"
+            st_abbr = state_id_map[state_id_to_show][-3:-1]
+            df = df[df["state_id"] == st_abbr]
+
+        # Violent range filter
+        df["violent_crime"] = pd.to_numeric(df["violent_crime"], errors="coerce")
+        df = df.dropna(subset=["violent_crime"])
+        vmin, vmax = input.violent_range()
+        df = df[(df["violent_crime"] >= vmin) & (df["violent_crime"] <= vmax)]
+
+        # Crime category filter
+        category = str(input.crime_category())
+        config = CRIME_CONFIG.get(category, CRIME_CONFIG["violent"])
+        col = config["column"]
+        if col in df.columns:
+            df[col] = pd.to_numeric(df[col], errors="coerce")
+            df = df.dropna(subset=[col])
+
+        # Population filter
+        if hasattr(input, "population_range") and ("total_pop" in df.columns):
+            pmin, pmax = input.population_range()
+            df = df[(df["total_pop"] >= pmin) & (df["total_pop"] <= pmax)]
 
         # State Level View
         state_view = not (state_id_to_show == 0)
@@ -362,8 +393,8 @@ def server(input, output, session):
                 .encode(tooltip=["state_name:N"])
             )
 
-            # Get State level Data
-            plot_df = df[df["state_id"] == state_id_map[state_id_to_show][-3:-1]]
+            # Plotting df
+            plot_df = df
 
             # Get cities in the state
             state_cities = sorted(plot_df["city"].dropna().unique().tolist())
@@ -404,7 +435,7 @@ def server(input, output, session):
                     latitude="lat:Q",
                     size=alt.Size(
                         f"{category}_per_100k:Q",
-                        title=f"{config['title']} per 100K ({year_min}-{year_max})",
+                        title=f"Avg {config['title']} per 100K ({yr_min}-{yr_max})",
                     ),
                     color=alt.condition(
                         alt.FieldOneOfPredicate(field="city", oneOf=selected),
@@ -439,7 +470,7 @@ def server(input, output, session):
                 latitude="lat:Q",
                 size=alt.Size(
                     f"{category}_per_100k:Q",
-                    title=f"{config['title']} per 100K ({year_min}-{year_max})",
+                    title=f"Avg {config['title']} per 100K ({yr_min}-{yr_max})",
                 ),
                 color=alt.value(config["color"]),
                 tooltip=[
@@ -457,4 +488,6 @@ def server(input, output, session):
             .project("albersUsa")
             .properties(width="container", height=500)
         )
+
+
 app = App(app_ui, server)
