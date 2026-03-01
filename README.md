@@ -1,4 +1,4 @@
-# DSCI-532_2025_13_tbd
+# DSCI-532_2025_13_usa_crime-tracker
 DSCI 532 Dashboard Projects
 
 # Project Summary 
@@ -41,3 +41,15 @@ In the terminal, enter:
 Ctrl + C
 ```
 
+# Users
+
+Moving to a new country comes with many important decisions, and safety is often one of the top concerns for immigrants. The USA Crime Tracker Dashboard is an interactive Shiny application that allows users to explore historical crime trends across reporting cities in the United States. Through dynamic visualizations and key summary metrics, the dashboard highlights geographic patterns, changes over time, and relative crime rates. By presenting the data in an accessible and interactive format, the app helps prospective immigrants make more informed decisions about their safety when relocating to the U.S.
+
+## DEMO
+
+Below is a gif demo on how to use the dashboard: 
+![Demo of the app](img/demo.gif)
+
+# Contributors
+ If you are looking to contribute ot the project please refer to the guidelines in this document: 
+ [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
