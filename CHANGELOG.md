@@ -18,6 +18,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added Crime Category single-select filter.
 - Added State single-select filter.
 - Added map_plot.
+- Added Population range slider.
+- Added Date/Year slider input for temporal filtering.
+- Added KPI outputs based off the reactive filtered data frame.
 - Added 2 new user stories to filter on population and crime rate.
 - Added links to published stable and preview dashboards to README.md
 - Added m2_spec.md to reports
@@ -29,9 +32,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Changed shiny version to 1.4.0
 - Updated environment.yml
 - Updated dashboard layout from the M1 sketch to simplify the user workflow.
+- Removed the filtered data frame place holder output on the shiny app skeleton.
 - Removed the stacked area chart and Top-10 ranking chart; replaced with a single line comparison chart focused on temporal crime trends.
 - Removed the full data table since it did not directly support current user stories.
 - Reorganized layout so map and line chart serve as the primary analytical views.
+- Changed placement of Change in Crime Rate table to align with line chart analysis view.
 - Updated component structure to better align with implemented job stories and filtering workflow.
 
 ### Known Issues
