@@ -45,6 +45,8 @@ flowchart TD
  S --> P2([map_plot])
  A --> P2
  Crime --> P2
+ B --> P2
+ C --> P2
 
   F --> V1([out_total_crime])
   F --> V2([out_crime_rate])

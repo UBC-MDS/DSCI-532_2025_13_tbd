@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Implemented reactive filtering using `@reactive.calc` for dashboard data.
 - Added City/Department multi-select filter.
 - Added Violent Crime Range slider filter.
+- Added Population range slider
+- Added KPI outputs based off the reactive filtered data frame
 - Added Altair line chart for "Violent crime over time".
 - Connected chart to reactive filtered dataset.
 - Added Crime Category single-select filter.
@@ -31,4 +33,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
-- add stuff here
+- Removed the filtered data frame place holder output on the shiny app skeleton 
