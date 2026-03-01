@@ -111,7 +111,18 @@ app_ui = ui.page_sidebar(
         ui.h4("Filters"),
         ui.hr(),
         ui.h5("Date Range and Population"),
-        ui.p("Date Range filter"),
+        # ADDED: DATE SLIDER
+        ui.h5("Date Range"),
+        #ui.p("Date Range filter"),
+        ui.input_slider(
+            "year_range",
+            "Select Year",
+            min=int(df_merged["year"].min()),
+            max=int(df_merged["year"].max()),
+            value=[int(df_merged["year"].min()), int(df_merged["year"].max())],
+            step=1
+        ),
+        ui.hr(),
         ui.input_slider(
             "population_range",
             "Population range",
@@ -167,8 +178,11 @@ app_ui = ui.page_sidebar(
         ui.value_box("Total Crimes", ui.output_text("total_crimes")),
         ui.value_box("Crime Rate (per 100k)", ui.output_text("crime_rate")),
         ui.value_box("Population", ui.output_text("pop_kpi")),
-        ui.value_box("Most Common Crime", 0),
-        ui.value_box("Change in Crime Rate", 0),
+        # ADDED: KPI — MOST COMMON CRIME
+        ui.card(
+            ui.h5("Most Common Crime"),
+            ui.output_text("kpi_most_common")
+        ),
     ),
     ui.hr(),
     # Map Visuals
@@ -177,11 +191,26 @@ app_ui = ui.page_sidebar(
         output_widget("map_plot"),
     ),
     ui.hr(),
-    # Aggregated Crime Line Plot
-    ui.card(
-        ui.h5("Violent crime over time"),
-        output_widget("line_plot"),
+    # Modified: Aggregated Crime Line Plot + KPI table in same row
+    ui.layout_columns(
+        ui.column(
+            12,
+            ui.card(
+                ui.h5("Violent crime over time"),
+                output_widget("line_plot"),
+            )
+        ),
+    
+        ui.column(
+            12,
+            ui.card(
+                ui.h5("Change in Crime Rate"),
+                ui.output_data_frame("kpi_change_table")
+            )
+        )
     ),
+    
+    ui.hr()
 )
 
 
@@ -488,6 +517,53 @@ def server(input, output, session):
             .project("albersUsa")
             .properties(width="container", height=500)
         )
+    # ADDED: KPI — MOST COMMON CRIME (USING *_sum COLUMNS)
+    @reactive.Calc
+    def most_common_crime():
+        d = filtered_df().copy()
+        if d.empty:
+            return "No data"
+
+        crime_totals = {
+            "Homicide": d["homs_sum"].sum(),
+            "Rape": d["rape_sum"].sum(),
+            "Robbery": d["rob_sum"].sum(),
+            "Aggravated Assault": d["agg_ass_sum"].sum()
+        }
+
+        return max(crime_totals, key=crime_totals.get)
+
+    @output
+    @render.text
+    def kpi_most_common():
+        return most_common_crime()
+
+    # ADDED: KPI — CHANGE IN CRIME RATE (violent_per_100k)
+    @reactive.Calc
+    def crime_change_table():
+        d = filtered_df().copy()
+        if d.empty:
+            return pd.DataFrame({"message": ["No data available"]})
+
+        # Compute average violent crime rate per year
+        yearly = (
+            d.groupby("year")["violent_per_100k"]
+            .mean()
+            .reset_index()
+            .sort_values("year")
+        )
+
+        # ROUND ALL NUMERIC COLUMNS TO 2 DECIMAL PLACES 
+        yearly["previous"] = round(yearly["violent_per_100k"].shift(1),2)
+        yearly["change"] = round(yearly["violent_per_100k"] - yearly["previous"],2)
+        yearly["violent_per_100k"] = round(yearly["violent_per_100k"],2)
+        
+        return yearly
+
+    @output
+    @render.data_frame
+    def kpi_change_table():
+        return crime_change_table()        
 
 
 app = App(app_ui, server)
