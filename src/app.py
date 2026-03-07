@@ -1,4 +1,7 @@
 from shiny import App, ui, reactive, render
+import anthropic
+import os
+
 import pandas as pd
 import altair as alt
 from shinywidgets import output_widget, render_altair
@@ -104,114 +107,156 @@ CRIME_CONFIG = {
 min_pop = int(df_merged["total_pop"].min())
 max_pop = int(df_merged["total_pop"].max())
 
+ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY")
+client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
+MAX_TOKENS = 300   # token limit
 
-app_ui = ui.page_sidebar(
-    # Filter Section
-    ui.sidebar(
-        ui.h4("Filters"),
-        ui.hr(),
-        ui.h5("Date Range and Population"),
-        # ADDED: DATE SLIDER
-        ui.h5("Date Range"),
-        #ui.p("Date Range filter"),
-        ui.input_slider(
-            "year_range",
-            "Select Year",
-            min=int(df_merged["year"].min()),
-            max=int(df_merged["year"].max()),
-            value=[int(df_merged["year"].min()), int(df_merged["year"].max())],
-            step=1
-        ),
-        ui.hr(),
-        ui.input_slider(
-            "population_range",
-            "Population range",
-            min=min_pop,
-            max=max_pop,
-            value=(min_pop, max_pop),
-        ),
-        ui.hr(),
-        ui.h5("Geography"),
-        ui.input_select("state_id", "State", state_id_map),
-        ui.input_selectize(
-            "cities",
-            "City / Department",
-            choices=["All"] + selected_cities,
-            selected=["All"],
-            multiple=True,
-            options={
-                "plugins": ["remove_button"],
-                "placeholder": "All (default) or search cities...",
-                "maxOptions": 150,
-                "closeAfterSelect": True,
-            },
-        ),
-        ui.hr(),
-        ui.h5("Crime Details"),
-        ui.input_select(
-            "crime_category",
-            "Crime Category:",
-            {
-                "violent": "All",
-                "homs": "Homocide",
-                "rape": "Rape",
-                "rob": "Robery",
-                "agg_ass": "Aggravated Assault",
-            },
-        ),
-        # Aggregated crime filter
-        ui.input_slider(
-            "violent_range",
-            "Violent Crime Range",
-            min=int(df_raw["violent_crime"].min()),
-            max=int(df_raw["violent_crime"].max()),
-            value=(
-                int(df_raw["violent_crime"].min()),
-                int(df_raw["violent_crime"].max()),
+app_ui = ui.page_navbar(
+
+    # PAGE 1: Dashboard
+    ui.nav_panel(
+        "Dashboard",
+        ui.page_sidebar(
+            # Filter Section
+            ui.sidebar(
+                ui.h4("Filters"),
+                ui.hr(),
+                ui.h5("Date Range and Population"),
+                # ADDED: DATE SLIDER
+                ui.h5("Date Range"),
+                #ui.p("Date Range filter"),
+                ui.input_slider(
+                    "year_range",
+                    "Select Year",
+                    min=int(df_merged["year"].min()),
+                    max=int(df_merged["year"].max()),
+                    value=[int(df_merged["year"].min()), int(df_merged["year"].max())],
+                    step=1
+                ),
+                ui.hr(),
+                ui.input_slider(
+                    "population_range",
+                    "Population range",
+                    min=min_pop,
+                    max=max_pop,
+                    value=(min_pop, max_pop),
+                ),
+                ui.hr(),
+                ui.h5("Geography"),
+                ui.input_select("state_id", "State", state_id_map),
+                ui.input_selectize(
+                    "cities",
+                    "City / Department",
+                    choices=["All"] + selected_cities,
+                    selected=["All"],
+                    multiple=True,
+                    options={
+                        "plugins": ["remove_button"],
+                        "placeholder": "All (default) or search cities...",
+                        "maxOptions": 150,
+                        "closeAfterSelect": True,
+                    },
+                ),
+                ui.hr(),
+                ui.h5("Crime Details"),
+                ui.input_select(
+                    "crime_category",
+                    "Crime Category:",
+                    {
+                        "violent": "All",
+                        "homs": "Homocide",
+                        "rape": "Rape",
+                        "rob": "Robery",
+                        "agg_ass": "Aggravated Assault",
+                    },
+                ),
+                # Aggregated crime filter
+                ui.input_slider(
+                    "violent_range",
+                    "Violent Crime Range",
+                    min=int(df_raw["violent_crime"].min()),
+                    max=int(df_raw["violent_crime"].max()),
+                    value=(
+                        int(df_raw["violent_crime"].min()),
+                        int(df_raw["violent_crime"].max()),
+                    ),
+                ),
             ),
-        ),
-    ),
-    # Visualization and Summary Section
-    ui.h1("USA Crime Dashboard"),
-    # KPI and Summary
-    ui.layout_columns(
-        ui.value_box("Total Crimes", ui.output_text("total_crimes")),
-        ui.value_box("Crime Rate (per 100k)", ui.output_text("crime_rate")),
-        ui.value_box("Population", ui.output_text("pop_kpi")),
-        # ADDED: KPI — MOST COMMON CRIME
-        ui.card(
-            ui.h5("Most Common Crime"),
-            ui.output_text("kpi_most_common")
-        ),
-    ),
-    ui.hr(),
-    # Map Visuals
-    ui.card(
-        ui.h5("Crime Map"),
-        output_widget("map_plot"),
-    ),
-    ui.hr(),
-    # Modified: Aggregated Crime Line Plot + KPI table in same row
-    ui.layout_columns(
-        ui.column(
-            12,
+            # Visualization and Summary Section
+            ui.h1("USA Crime Dashboard"),
+            # KPI and Summary
+            ui.layout_columns(
+                ui.value_box("Total Crimes", ui.output_text("total_crimes")),
+                ui.value_box("Crime Rate (per 100k)", ui.output_text("crime_rate")),
+                ui.value_box("Population", ui.output_text("pop_kpi")),
+                # ADDED: KPI — MOST COMMON CRIME
+                ui.card(
+                    ui.h5("Most Common Crime"),
+                    ui.output_text("kpi_most_common")
+                ),
+            ),
+            ui.hr(),
+            # Map Visuals
             ui.card(
-                ui.h5("Violent crime over time"),
-                output_widget("line_plot"),
-            )
-        ),
-    
-        ui.column(
-            12,
+                ui.h5("Crime Map"),
+                output_widget("map_plot"),
+            ),
+            ui.hr(),
+            # Modified: Aggregated Crime Line Plot + KPI table in same row
+            ui.layout_columns(
+                ui.column(
+                    12,
+                    ui.card(
+                        ui.h5("Violent crime over time"),
+                        output_widget("line_plot"),
+                    )
+                ),
+            
+                ui.column(
+                    12,
+                    ui.card(
+                        ui.h5("Change in Crime Rate"),
+                        ui.output_data_frame("kpi_change_table")
+                    )
+                )
+            ),
+            
+            ui.hr()
+        )
+
+    ),
+
+    # PAGE 2: AI Assistant
+    ui.nav_panel(
+        "AI Assistant",
+        ui.layout_columns(
             ui.card(
-                ui.h5("Change in Crime Rate"),
-                ui.output_data_frame("kpi_change_table")
+                ui.h3("AI Assistant"),
+
+                ui.input_text_area(
+                    "ai_user_input",
+                    "Ask the AI about the dataset:",
+                    placeholder="e.g., summarize crime trends in Texas",
+                    rows=4
+                ),
+
+                ui.input_action_button("ai_send_btn", "Send"),
+
+                ui.hr(),
+
+                ui.h4("AI Response"),
+                ui.output_text_verbatim("ai_chat_output"),
+
+                ui.hr(),
+
+                ui.h4("Filtered DataFrame"),
+                ui.output_data_frame("ai_dataframe_output")
+
             )
         )
-    ),
-    
-    ui.hr()
+    )
 )
+
 
 
 def server(input, output, session):
@@ -563,7 +608,46 @@ def server(input, output, session):
     @output
     @render.data_frame
     def kpi_change_table():
-        return crime_change_table()        
+        return crime_change_table()     
+
+
+    @reactive.Effect
+    @reactive.event(input.ai_send_btn)
+    def _():
+        user_input = input.ai_user_input()
+    
+        if not user_input:
+            output.ai_chat_output.set("Please enter a question.")
+            return
+    
+        output.ai_chat_output.set("Thinking...")
+    
+        async def call_ai():
+            try:
+                response = await asyncio.to_thread(
+                    client.messages.create,
+                    model="claude-haiku-4-5-20251001",
+                    max_tokens=MAX_TOKENS,
+                    messages=[{"role": "user", "content": user_input}]
+                )
+                return response.content[0].text
+            except Exception as e:
+                return f"Error calling Anthropic API: {e}"
+    
+        task = reactive.Task(call_ai())
+    
+        @task.on_done
+        def _(result):
+            output.ai_chat_output.set(result)
+
+
+    # Filtered df
+    @output
+    @render.data_frame
+    def ai_dataframe_output():
+        return filtered_df()
+
+
 
 
 app = App(app_ui, server)
