@@ -119,8 +119,11 @@ app_ui = ui.page_navbar(
         ui.page_sidebar(
             # Filter Section
             ui.sidebar(
-                ui.h4("Filters"),
-                ui.hr(),
+                ui.div(
+                    ui.h4("Filters"),
+                    ui.hr(),
+                    {"class": "sidebar-fixed-header"},
+                ),
                 ui.h5("Date Range and Population"),
                 # ADDED: DATE SLIDER
                 ui.h5("Date Range"),
@@ -185,7 +188,48 @@ app_ui = ui.page_navbar(
 
             ui.tags.style("""
                 .bslib-sidebar-layout > .collapse-toggle {
-                    top: 56px !important;
+                    position: fixed;
+                    right: auto !important;
+                    z-index: 1031;
+                }
+
+                .bslib-sidebar-layout > .collapse-toggle[aria-expanded="true"] {
+                    top: 78px !important;
+                    left: calc(var(--_sidebar-width, 250px) - 40px) !important;
+                    transform: none;
+                }
+
+                .bslib-sidebar-layout > .collapse-toggle[aria-expanded="false"] {
+                    top: 50% !important;
+                    left: 10px !important;
+                    transform: translateY(-50%);
+                }
+                
+                .bslib-sidebar-layout > .sidebar {
+                    position: fixed;
+                    top: 56px;
+                    bottom: 0;
+                    width: var(--_sidebar-width, 250px);
+                    background: white;
+                    overflow-y: auto;
+                    overflow-x: hidden;
+                }
+
+                .bslib-sidebar-layout > .sidebar .sidebar-fixed-header {
+                    position: sticky;
+                    top: 0;
+                    z-index: 1030;
+                    background: white;
+                    padding-top: 0.75rem;
+                }
+
+                .bslib-sidebar-layout > .sidebar .sidebar-fixed-header h4 {
+                    margin: 0;
+                }
+
+                .bslib-sidebar-layout > .sidebar .sidebar-fixed-header hr {
+                    margin-top: 0.75rem;
+                    margin-bottom: 0;
                 }
                 
                 .fixed-main-header {
