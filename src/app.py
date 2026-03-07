@@ -111,6 +111,66 @@ ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY")
 client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
 MAX_TOKENS = 300   # token limit
 
+import querychat
+from anthropic import Anthropic
+
+#FIX API KEY
+#os.environ["ANTHROPIC_API_KEY"] =
+
+
+# ── querychat (Tab 1) 
+qc = querychat.QueryChat(
+    df_merged.copy(),
+    "Statistics",
+    greeting="""👋 Ask me anything about US crime statistics.
+
+* <span class="suggestion">Filter to New York City only</span>
+* <span class="suggestion">Which city has the highest crime rate?</span>
+""",
+
+    data_description="""
+Violent Crime Statistics in the USA (for 57 cities from 32 states).
+- state_id: state id code, for example: CA for california
+- year: The year for a given set of crime statistics for a given city
+- city: A city in the USA
+- total_pop: total population of a given city in a given year
+- homs_sum: total number of homicides for a given city in a given year
+- rape_sum: total number of rapes for a given city in a given year
+- rob_sum: total number of robberies for a given city in a given year
+- agg_ass_sum: total number of aggravated assaults for a given city in a given year
+- violent_crime: total number of violent crimes for a given city in a given year
+- months_reported: number of months of the year reported in the crime stats
+- violent_per_100k: number of violent crimes for a given city in a given year per 100k people
+- homs_per_100k: number of homicides for a given city in a given year per 100k people
+- rape_per_100k: number of rapes for a given city in a given year per 100k people
+- rob_per_100k: number of robberies for a given city in a given year per 100k people
+- agg_ass_per_100k: number of aggravated assaults for a given city in a given year per 100k people
+- lat: latitude of a given city
+- lng: longitude of a given city
+""",
+    extra_instructions="""
+Use this dictionary to map State names to state_id's for filtering.
+If someone asks for "California" you can use this to find the state code "CA" to filter state_id on:
+state_mapping = {
+    "AL": "Alabama", "AK": "Alaska", "AZ": "Arizona", "AR": "Arkansas",
+    "CA": "California", "CO": "Colorado", "CT": "Connecticut", "DE": "Delaware",
+    "FL": "Florida", "GA": "Georgia", "HI": "Hawaii", "ID": "Idaho",
+    "IL": "Illinois", "IN": "Indiana", "IA": "Iowa", "KS": "Kansas",
+    "KY": "Kentucky", "LA": "Louisiana", "ME": "Maine", "MD": "Maryland",
+    "MA": "Massachusetts", "MI": "Michigan", "MN": "Minnesota", "MS": "Mississippi",
+    "MO": "Missouri", "MT": "Montana", "NE": "Nebraska", "NV": "Nevada",
+    "NH": "New Hampshire", "NJ": "New Jersey", "NM": "New Mexico", "NY": "New York",
+    "NC": "North Carolina", "ND": "North Dakota", "OH": "Ohio", "OK": "Oklahoma",
+    "OR": "Oregon", "PA": "Pennsylvania", "RI": "Rhode Island", "SC": "South Carolina",
+    "SD": "South Dakota", "TN": "Tennessee", "TX": "Texas", "UT": "Utah",
+    "VT": "Vermont", "VA": "Virginia", "WA": "Washington", "WV": "West Virginia",
+    "WI": "Wisconsin", "WY": "Wyoming", "DC": "District of Columbia"
+}
+""",
+    client="anthropic/claude-haiku-4-5-20251001"
+    #client=ChatGithub(model="gpt-4.1-mini"),
+)
+
 app_ui = ui.page_navbar(
 
     # PAGE 1: Dashboard
@@ -225,35 +285,17 @@ app_ui = ui.page_navbar(
         )
 
     ),
-
-    # PAGE 2: AI Assistant
     ui.nav_panel(
-        "AI Assistant",
-        ui.layout_columns(
+        "LLM Chat",
+        ui.layout_sidebar(
+            qc.sidebar(),
             ui.card(
-                ui.h3("AI Assistant"),
-
-                ui.input_text_area(
-                    "ai_user_input",
-                    "Ask the AI about the dataset:",
-                    placeholder="e.g., summarize crime trends in Texas",
-                    rows=4
-                ),
-
-                ui.input_action_button("ai_send_btn", "Send"),
-
-                ui.hr(),
-
-                ui.h4("AI Response"),
-                ui.output_text_verbatim("ai_chat_output"),
-
-                ui.hr(),
-
-                ui.h4("Filtered DataFrame"),
-                ui.output_data_frame("ai_dataframe_output")
-
-            )
-        )
+                ui.card_header(ui.output_text("chat_title")),
+                ui.output_data_frame("chat_table"),
+                fill=True,
+            ),
+            fillable=True,
+        ),
     )
 )
 
@@ -611,42 +653,22 @@ def server(input, output, session):
         return crime_change_table()     
 
 
-    @reactive.Effect
-    @reactive.event(input.ai_send_btn)
-    def _():
-        user_input = input.ai_user_input()
-    
-        if not user_input:
-            output.ai_chat_output.set("Please enter a question.")
-            return
-    
-        output.ai_chat_output.set("Thinking...")
-    
-        async def call_ai():
-            try:
-                response = await asyncio.to_thread(
-                    client.messages.create,
-                    model="claude-haiku-4-5-20251001",
-                    max_tokens=MAX_TOKENS,
-                    messages=[{"role": "user", "content": user_input}]
-                )
-                return response.content[0].text
-            except Exception as e:
-                return f"Error calling Anthropic API: {e}"
-    
-        task = reactive.Task(call_ai())
-    
-        @task.on_done
-        def _(result):
-            output.ai_chat_output.set(result)
-
-
     # Filtered df
     @output
     @render.data_frame
     def ai_dataframe_output():
         return filtered_df()
 
+    # ── Tab 1: querychat 
+    qc_vals = qc.server()
+
+    @render.text
+    def chat_title():
+        return qc_vals.title() or "US Crime dataset"
+
+    @render.data_frame
+    def chat_table():
+        return qc_vals.df()
 
 
 
