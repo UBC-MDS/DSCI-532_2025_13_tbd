@@ -91,14 +91,31 @@ CRIME_CONFIG = {
     "violent": {
         "color": "#800000",
         "column": "violent_crime",
+        "per_100k_column": "violent_per_100k",
         "title": "Violent Crime",
     },
-    "homs": {"color": "#191970", "column": "homs_sum", "title": "Homicides"},
-    "rape": {"color": "#006064", "column": "rape_sum", "title": "Rapes"},
-    "rob": {"color": "#A0522D", "column": "rob_sum", "title": "Robberies"},
+    "homs": {
+        "color": "#191970",
+        "column": "homs_sum",
+        "per_100k_column": "homs_per_100k",
+        "title": "Homicides",
+    },
+    "rape": {
+        "color": "#006064",
+        "column": "rape_sum",
+        "per_100k_column": "rape_per_100k",
+        "title": "Rapes",
+    },
+    "rob": {
+        "color": "#A0522D",
+        "column": "rob_sum",
+        "per_100k_column": "rob_per_100k",
+        "title": "Robberies",
+    },
     "agg_ass": {
         "color": "#2F4F4F",
         "column": "agg_ass_sum",
+        "per_100k_column": "agg_ass_per_100k",
         "title": "Aggravated Assault",
     },
 }
@@ -130,8 +147,9 @@ app_ui = ui.page_navbar(
                     "Select Year",
                     min=int(df_merged["year"].min()),
                     max=int(df_merged["year"].max()),
-                    value=[int(df_merged["year"].min()), int(df_merged["year"].max())],
-                    step=1
+                    value=[int(df_merged["year"].max()) - 4, int(df_merged["year"].max())],
+                    step=1,
+                    sep=""
                 ),
                 ui.hr(),
                 ui.input_slider(
@@ -207,7 +225,7 @@ app_ui = ui.page_navbar(
                 ui.column(
                     12,
                     ui.card(
-                        ui.h5("Violent crime over time"),
+                        ui.h5("Crime Rate Over Time (per 100k)"),
                         output_widget("line_plot"),
                     )
                 ),
@@ -351,13 +369,13 @@ def server(input, output, session):
 
         category = str(input.crime_category())
         config = CRIME_CONFIG.get(category, CRIME_CONFIG["violent"])
-        crime_col = config["column"]
+        per_100k_col = config["per_100k_column"]
         crime_title = config["title"]
 
         df["year"] = pd.to_numeric(df["year"], errors="coerce")
-        df[crime_col] = pd.to_numeric(df[crime_col], errors="coerce")
+        df[per_100k_col] = pd.to_numeric(df[per_100k_col], errors="coerce")
 
-        df = df.dropna(subset=["year", crime_col])
+        df = df.dropna(subset=["year", per_100k_col])
 
         if df.empty:
             return (
@@ -371,30 +389,37 @@ def server(input, output, session):
 
         # If multiple cities are selected, show lines for each city. Otherwise, show aggregated line for all cities.
         if multi:
-            plot_df = df.groupby(["year", "city"], as_index=False)[crime_col].sum()
+            plot_df = df.groupby(["year", "city"], as_index=False)[per_100k_col].mean()
 
             return (
                 alt.Chart(plot_df)
                 .mark_line()
                 .encode(
-                    x=alt.X("year:Q", title="Year"),
-                    y=alt.Y(f"{crime_col}:Q", title=f"{crime_title} (count)"),
+                    x=alt.X("year:Q", title="Year", axis=alt.Axis(format="d")),
+                    y=alt.Y(f"{per_100k_col}:Q", title=f"{crime_title} (per 100k)"),
                     color=alt.Color("city:N", title="City/Dept"),
-                    tooltip=["year:Q", "city:N", f"{crime_col}:Q"],
+                    tooltip=[
+                        alt.Tooltip("year:Q", title="Year", format="d"),
+                        "city:N",
+                        f"{per_100k_col}:Q",
+                    ],
                 )
                 .properties(width="container", height=340)
             )
 
         # All Cities (aggregated)
-        plot_df = df.groupby("year", as_index=False)[crime_col].sum()
+        plot_df = df.groupby("year", as_index=False)[per_100k_col].mean()
 
         return (
             alt.Chart(plot_df)
             .mark_line()
             .encode(
-                x=alt.X("year:Q", title="Year"),
-                y=alt.Y(f"{crime_col}:Q", title=f"{crime_title} (count)"),
-                tooltip=["year:Q", f"{crime_col}:Q"],
+                x=alt.X("year:Q", title="Year", axis=alt.Axis(format="d")),
+                y=alt.Y(f"{per_100k_col}:Q", title=f"{crime_title} (per 100k)"),
+                tooltip=[
+                    alt.Tooltip("year:Q", title="Year", format="d"),
+                    f"{per_100k_col}:Q",
+                ],
             )
             .properties(width="container", height=340)
         )
