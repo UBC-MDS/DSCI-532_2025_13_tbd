@@ -289,6 +289,11 @@ app_ui = ui.page_navbar(
                     margin-top: 0;
                     margin-bottom: 0.2rem;
                 }
+
+                /* Add top offset for AI Assistant tab under fixed navbar */
+                .ai-assistant-offset {
+                    margin-top: 56px;
+                }
             """),
 
             ui.tags.script("""
@@ -299,13 +304,13 @@ app_ui = ui.page_navbar(
 
                     if (!header || !main) return;
 
-                    const rect = main.getBoundingClientRect();
                     const navHeight = navbar ? navbar.offsetHeight : 56;
+                    const rect = main.getBoundingClientRect();
 
                     header.style.left = rect.left + 'px';
                     header.style.width = rect.width + 'px';
                     header.style.top = navHeight + 'px';
-                    main.style.paddingTop = (header.offsetHeight + 4) + 'px';
+                    main.style.paddingTop = (navHeight + header.offsetHeight + 4) + 'px';
                 }
 
                 window.addEventListener('load', syncFixedMainHeader);
@@ -373,6 +378,7 @@ app_ui = ui.page_navbar(
     ui.nav_panel(
         "AI Assistant",
         ui.layout_columns(
+            {"class": "ai-assistant-offset"},
             ui.card(
                 ui.h3("AI Assistant"),
 
